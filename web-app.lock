@@ -1,0 +1,4 @@
+# The RaPS web app version this APK ships.
+# Change it with: bash scripts/pin-web.sh <commit-or-branch>
+WEB_REPO=https://github.com/DAFTCCC/DAF-TCCC-RaPS-WEB.git
+WEB_COMMIT=492842b9dbc7aeeaa71946e24f103ad0fcf6cd8f

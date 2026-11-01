@@ -15,11 +15,11 @@ if [ ! -d "$SOURCE_DIR" ]; then
   exit 1
 fi
 
-echo "Applying TCCC launcher icon and native splash resources..."
+echo "Applying RaPS launcher icon and native splash resources..."
 cp -R "$SOURCE_DIR"/* "$TARGET_DIR"/
 test -f "$TARGET_DIR/mipmap-xxxhdpi/ic_launcher.png"
 test -f "$TARGET_DIR/mipmap-xxxhdpi/ic_launcher_foreground.png"
 test -f "$TARGET_DIR/drawable-port-xxxhdpi/splash.png"
 test -f "$TARGET_DIR/values-v31/tccc_splash_styles.xml"
 
-echo "TCCC native Android branding applied successfully."
+echo "RaPS native Android branding applied successfully."
