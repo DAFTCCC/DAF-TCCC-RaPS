@@ -1,139 +1,57 @@
-# TCCC Evaluation Suite — v3.0.1 Android / APK
+# DAF-TCCC-RaPS — Android app
 
-**Release:** v3.0.1  
-**Android versionCode:** 30000  
-**Role:** Offline TCCC field evaluation, local training management, readiness analytics, and program oversight
+This repository builds the **RaPS Android app (APK)**. The app is the RaPS web
+app from [DAF-TCCC-RaPS-WEB](https://github.com/DAFTCCC/DAF-TCCC-RaPS-WEB)
+packaged with Capacitor: same grading logic, same server, same sign-in.
 
-v3.0.1 is a maintenance release on the field-driven usability and information-architecture release built directly from the validated **v2.21.2** baseline. It preserves the existing Tier 1–4 curriculum/checklist content, timers, scoring thresholds, critical-failure logic, RCA/performance-intelligence data, MAJCOM/base metadata, local persistence, reports, exports, backup/restore, branding, and Android build pipeline unless specifically changed below.
+The web code is **not copied** here. `web-app.lock` pins the exact web app
+commit each APK ships, and the build downloads it. The web repository stays
+web-only, and there is one copy of the grading logic.
 
-## Major v3.0 changes
+| | |
+|---|---|
+| App ID | `org.daftccc.raps` |
+| Ships | RaPS web app at the commit in `web-app.lock` |
+| Version | RaPS version name (e.g. `3.4.13-web.5`); versionCode = RaPS versionCode × 100 + web number |
+| Builds | GitHub Actions: test APK on every pull request; signed APK + GitHub Release on `main` |
 
-### OBSERVE | REVIEW
-The prior Field Mode / Review Mode interface is now a clear segmented **OBSERVE | REVIEW** control.
+## Releasing a new web version as an APK
 
-**OBSERVE** prioritizes live grading:
-- student / attempt,
-- phase and current unresolved criterion,
-- PASS / FAIL / NT,
-- active timers,
-- critical-failure warning,
-- current score and unresolved count,
-- Next Unresolved,
-- phase navigation.
+1. Merge the web change in DAF-TCCC-RaPS-WEB.
+2. Here, on a branch: `bash scripts/pin-web.sh main` (or a full commit SHA).
+3. Open a pull request. CI attaches a test APK to the run.
+4. Merge. CI publishes `android-v<version>` on the Releases page.
 
-It minimizes review/admin material such as source citations, timeline, notes, sign-off, failure-analysis summaries, and export/finalization controls.
+Each RaPS version is released once; bump the web version before re-releasing.
 
-**REVIEW** restores the existing detailed information and administrative functions, including source information, failure details, notes, timeline/history, sign-off, finalization, and individual exports.
+## Layout
 
-### PASS | FAIL | NT only
-N/O is removed as a selectable grade. A criterion with no grade is **blank/unresolved** and blocks finalization when required.
+| Path | Purpose |
+|---|---|
+| `web-app.lock` | Web repo URL and pinned commit |
+| `scripts/fetch-web.sh` | Downloads the pinned web app into `.web-src/` |
+| `scripts/bundle-web.sh` | Copies the shipped files into `www/`, allows Capacitor's inline bridge in the APK's CSP only, checks every script is present |
+| `scripts/prepare-android.sh` | Generates the Android project, applies branding, version and hardening |
+| `scripts/harden-android.mjs` | Version, backups off, cleartext off, INTERNET kept for sync |
+| `native-android-res/` | Launcher icon and splash screen |
+| `.github/workflows/android.yml` | CI build and release |
+| `docs/ANDROID-APP.md` | Installing, signing key setup, how the build works |
+| `docs/legacy-v3.0.1/` | Notes from the earlier offline-only TCCC Evaluation Suite APK (v3.0.1) |
 
-Legacy saved `N/O` values are migrated safely to blank/unresolved. The original legacy value is retained under migration metadata (`legacyRatings`) for auditability rather than being silently treated as PASS/FAIL/NT.
+`www/`, `.web-src/` and `android/` are generated and not committed.
 
-### Simplified failure classification
-Evaluator-facing failure modes are:
-- Omitted
-- Incorrect
-- Delayed / Wrong Sequence
-- Incomplete
-- Unsafe / Other
+## Earlier offline-only app (v3.0.1)
 
-Primary Root Cause is renamed **Primary Performance Contributor**, with:
-- Knowledge
-- Recognition / Judgment
-- Skill / Execution
-- Prioritization / Teamwork
-- Environment / System
+Before this change, this repository held the standalone, offline-only
+**TCCC Evaluation Suite** (app ID `org.tccc.evaluationsuite`). Its source is in
+the git history (commit `11a4eac`). The RaPS app has a different app ID, so it
+installs **alongside** the old app and never overwrites records stored in it.
 
-Analytics now use **Observed Performance Contributors** language. These are evaluator observations, not scientific causal determinations.
+## Local build
 
-### Readable operational interface
-Operational typography and control sizing were increased. PASS / FAIL / NT controls use a three-column layout, criteria remain readable on phones/tablets, and responsive rules prevent text clipping/overflow or uncontrolled button height.
+Requires Node 20+, JDK 21 and the Android SDK.
 
-### Performance versus exposure
-NT remains excluded from the student performance denominator. Analytics separately show:
-- performance when tested,
-- tested/exposure rate,
-- NT rate.
-
-A high NT percentage is therefore not presented as successful performance.
-
-### Cleaner exports
-The primary class action is **Export Class Summary**. All existing detailed exports remain available under **More Exports ▾**, including summary, criteria, timer, event/audit, performance analytics, enterprise detail, and backup JSON.
-
-### Simplified startup disclosure
-The opening screen prominently presents:
-- **TRAINING USE ONLY**
-- **NO PHI/CUI**
-- **DATA STORED LOCALLY**
-
-Detailed safeguards remain available under **View Safeguards** and are not removed.
-
-### Four-area information architecture
-Home functions are organized into:
-- **EVALUATE**
-- **MANAGE TRAINING**
-- **READINESS**
-- **PROGRAM**
-
-No cloud, authentication, API, or enterprise backend is added.
-
-## Offline/local architecture
-The evaluator remains local/offline-first. There is no network transport in app logic, and the Content Security Policy retains `connect-src 'none'`.
-
-Working records remain in local device storage. Existing local PDF/CSV/JSON export functionality remains available through the Android filesystem layer.
-
-## Future-sync preparation — local only
-v3.0 adds local future-ready metadata without transmitting anything:
-- stable class / participant / attempt IDs,
-- parent linkage (`classId`, `participantId`),
-- device-generated identifier,
-- created / modified timestamps,
-- application version,
-- content/curriculum version,
-- `syncStatus: "LOCAL"`.
-
-The data model can later support states such as LOCAL / PENDING / SYNCED / CONFLICT, but **v3.0 performs no synchronization and transmits no records**.
-
-## Preserved from v2.21.2
-- CUF → EVAC workflow
-- Tier 1 ASM / Tier 2 CLS / Tier 3 CMC / Tier 4 CPP
-- 75% scoring threshold and critical-failure override
-- current TCCC criterion content/order/criticality/source references
-- all 22 timer definitions
-- cross-phase Active Timers STOP controls
-- top CUF Tourniquet quick timer
-- overall TTA timers on all four tiers
-- wound-packing and advanced CMC/CPP timers
-- Next Unresolved top and bottom
-- scenario NT setup and NT justification
-- A1/A2 remediation behavior
-- class locking/finalization
-- local records
-- class/readiness/program analytics
-- MAJCOM/base metadata
-- curriculum/version snapshots
-- PDF/CSV exports
-- backup/restore
-- TCCC icon/splash branding
-- approved tourniquet wording: **“Wound could be closely monitored.”**
-- **Contact: John Garcia** only
-
-## Validation
-See:
-- `FIELD_FEEDBACK_IMPLEMENTATION_v3.0.0.md`
-- `VALIDATION_REPORT_v3.0.0.md`
-- `CHANGELOG-v3.0.0.md`
-
-## Build test APK
-1. Place this repository contents at the root of the APK GitHub repository.
-2. Open **Actions**.
-3. Run **Build TCCC Test APK**.
-4. Download **`TCCC-v3.0.1-test.apk`**.
-
-The Android project is generated during CI, then TCCC launcher/splash resources are reapplied and Android hardening/versioning is verified before Gradle builds.
-
-## Signed release
-Use **Build TCCC Signed Release APK** after the repository signing secrets are configured. Do not commit a keystore or passwords.
-
-**Contact: John Garcia**
+```bash
+npm install
+npm run android:debug   # APK at android/app/build/outputs/apk/debug/
+```

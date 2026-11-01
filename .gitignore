@@ -1,0 +1,9 @@
+# Generated during the build; never committed.
+node_modules/
+.web-src/
+www/
+android/
+*.apk
+*.keystore
+*.jks
+*.b64
